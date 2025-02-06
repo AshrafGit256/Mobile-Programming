@@ -1,0 +1,1 @@
+This is a collaborative project for kotlin Calculator App which mainly focuses on the UI Design of the Calculator and if the calculator can perform the simple general operations of adding, subtraction, division and multiplication 
