@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color.Companion as Color1
 
 @Composable
-fun BottomNavItem(icon: ImageVector, label: String, onClick: () -> Unit) {
+fun BottomNavItem(icon: ImageVector, label: String,isSelected: Boolean, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -27,7 +27,7 @@ fun BottomNavItem(icon: ImageVector, label: String, onClick: () -> Unit) {
             imageVector = icon,
             contentDescription = label,
             modifier = Modifier.size(24.dp), // Reduce icon size if needed
-            tint = Color1.Gray
+            tint = if (isSelected) Color.Yellow else Color.Gray
         )
         Spacer(modifier = Modifier.height(4.dp)) // Add spacing between icon and text
         Text(

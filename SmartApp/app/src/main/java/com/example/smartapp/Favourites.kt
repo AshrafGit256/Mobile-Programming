@@ -28,6 +28,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,9 +45,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.smartapp.components.BottomNavItem
 
 @Composable
 fun Favourites(navController : NavController){
+    var selectedTab by remember{ mutableStateOf("favourites") }
     Box(modifier = Modifier.fillMaxSize()){
         Column(modifier = Modifier.fillMaxSize()){
             Row(
@@ -111,44 +117,63 @@ fun Favourites(navController : NavController){
 
             }
 
-            Row(modifier = Modifier.fillMaxWidth()
-                .background(Color.White)
-                .padding(8.dp),
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .shadow(elevation = 40.dp)
+                    .background(Color.White)
+                    .padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceAround
-
-            ){
-                com.example.smartapp.components.BottomNavItem(
-                    icon = Icons.Default.Star,
-                    label = "Favorites"
-                ){
-                    navController.navigate("favorites")
-                }
-                com.example.smartapp.components.BottomNavItem(
-                    icon = Icons.Default.Dashboard,
-                    label = "Things"
-                ){
-                    navController.navigate("things")
-                }
-                com.example.smartapp.components.BottomNavItem(
-                    icon = Icons.Default.SettingsBackupRestore,
-                    label = "Routines"
-                ){
-                    navController.navigate("routines"){
-                        navController.navigate("routines")
+            ) {
+                BottomNavItem(icon = Icons.Default.Star,
+                    label = "Favorites",
+                    isSelected = selectedTab == "favourites",
+                    onClick ={
+                        selectedTab = "favourites"
+                        navController.navigate("favorites")
                     }
-                }
-                com.example.smartapp.components.BottomNavItem(
-                    icon = Icons.Default.Lightbulb,
-                    label = "Ideas"
-                ){
-                    navController.navigate("ideas")
-                }
-                com.example.smartapp.components.BottomNavItem(
-                    icon = Icons.Default.Settings,
-                    label = "Settings"
-                ){
-                    navController.navigate("settings")
-                }
+                )
+
+
+                BottomNavItem(icon = Icons.Default.Dashboard,
+                    label = "Things",
+                    isSelected = selectedTab == "things",
+                    onClick ={
+                        selectedTab = "things"
+                        navController.navigate("things")
+
+                    }
+                )
+
+                BottomNavItem(
+                    icon = Icons.Default.SettingsBackupRestore,
+                    label = "Routines",
+                    isSelected = selectedTab == "routines",
+                    onClick ={
+                        selectedTab = "routines"
+                        navController.navigate("routines")
+
+                    }
+                )
+
+                BottomNavItem(icon = Icons.Default.Lightbulb,
+                    label = "Ideas",
+                    isSelected = selectedTab == "ideas",
+                    onClick ={
+                        selectedTab = "ideas"
+                        navController.navigate("ideas")
+
+                    }
+                )
+                BottomNavItem(icon = Icons.Default.Settings,
+                    label = "Settings",
+                    isSelected = selectedTab == "settings",
+                    onClick ={
+                        selectedTab ="settings"
+                        navController.navigate("settings")
+
+                    }
+                )
+
             }
         }
         FloatingActionButton(
@@ -164,13 +189,7 @@ fun Favourites(navController : NavController){
     }
 
 }
-@Composable
-fun BottomNavItem(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(imageVector = icon, contentDescription = label, modifier = Modifier.size(24.dp))
-        Text(text = label, fontSize = 12.sp, color = Color.Gray)
-    }
-}
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewSmartHomeScreen() {

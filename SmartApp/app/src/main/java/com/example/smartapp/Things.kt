@@ -7,6 +7,10 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +35,7 @@ fun PreviewThingsScreen() {
 
 @Composable
 fun Things(navController: NavController) {
+    var selectedTab by remember{ mutableStateOf("things")}
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             Row(
@@ -115,24 +120,56 @@ fun Things(navController: NavController) {
                             .padding(8.dp),
                         horizontalArrangement = Arrangement.SpaceAround
                     ) {
-                        BottomNavItem(icon = Icons.Default.Star, label = "Favorites") {
-                            navController.navigate("favorites")
-                        }
-                        BottomNavItem(icon = Icons.Default.Dashboard, label = "Things") {
-                            navController.navigate("things")
-                        }
+                        BottomNavItem(icon = Icons.Default.Star,
+                            label = "Favorites",
+                            isSelected = selectedTab == "favourites",
+                            onClick ={
+                                selectedTab = "favourites"
+                                navController.navigate("favorites")
+                            }
+                            )
+
+
+                        BottomNavItem(icon = Icons.Default.Dashboard,
+                            label = "Things",
+                            isSelected = selectedTab == "things",
+                            onClick ={
+                                selectedTab = "things"
+                                navController.navigate("things")
+
+                            }
+                        )
+
                         BottomNavItem(
                             icon = Icons.Default.SettingsBackupRestore,
-                            label = "Routines"
-                        ) {
-                            navController.navigate("routines")
-                        }
-                        BottomNavItem(icon = Icons.Default.Lightbulb, label = "Ideas") {
-                            navController.navigate("ideas")
-                        }
-                        BottomNavItem(icon = Icons.Default.Settings, label = "Settings") {
-                            navController.navigate("settings")
-                        }
+                            label = "Routines",
+                            isSelected = selectedTab == "routines",
+                            onClick ={
+                                selectedTab = "routines"
+                                navController.navigate("routines")
+
+                            }
+                        )
+
+                        BottomNavItem(icon = Icons.Default.Lightbulb,
+                            label = "Ideas",
+                            isSelected = selectedTab == "ideas",
+                            onClick ={
+                                selectedTab = "ideas"
+                                navController.navigate("ideas")
+
+                            }
+                            )
+                        BottomNavItem(icon = Icons.Default.Settings,
+                            label = "Settings",
+                            isSelected = selectedTab == "settings",
+                            onClick ={
+                                selectedTab ="settings"
+                                navController.navigate("settings")
+
+                            }
+                            )
+
                     }
         }
     }
