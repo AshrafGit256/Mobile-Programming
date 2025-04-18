@@ -44,6 +44,8 @@ class MainActivity : ComponentActivity() {
                     ){
                         composable("favourites"){Favourites(navController)}
                         composable("things"){Things(navController)}
+                        composable("settings"){UserSettings(navController)}
+                        composable("routines"){ Routines(navController) }
                     }
                 }
             }
