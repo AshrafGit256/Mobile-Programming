@@ -1,5 +1,6 @@
 package com.example.smartapp
 
+import android.app.TimePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,7 +26,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.smartapp.viewmodel.SettingsViewModel
 
 @Composable
-fun UserSettings(navController: NavController, viewModel: SettingsViewModel = viewModel()) {
+fun UserSettings(
+    navController: NavController,
+    viewModel: SettingsViewModel = viewModel()
+) {
     val userName by viewModel.userName.collectAsState()
     val userEmail by viewModel.userEmail.collectAsState()
     val appColor by viewModel.appColor.collectAsState()
@@ -96,20 +101,7 @@ fun UserSettingsContent(
         }
 
         // Section Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp)
-                .background(Color(0xFFE0E0E0))
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "User Settings",
-                color = Color.DarkGray,
-                fontSize = 16.sp
-            )
-        }
+        SectionHeader("User Settings")
 
         // User Info Row (clickable)
         Row(
@@ -139,7 +131,6 @@ fun UserSettingsContent(
 
         // App Settings Section
         SectionHeader("App Settings")
-
         SettingRow("App Color") {
             Icon(
                 imageVector = Icons.Default.CheckBox,
@@ -147,13 +138,11 @@ fun UserSettingsContent(
                 tint = appColor,
                 modifier = Modifier.clickable {
                     val lightPurple = Color(0xFFD1C4E9)
-                    val defaultColor = Color(0xFFFFC107) // your default yellow
-                    val newColor = if (appColor == lightPurple) defaultColor else lightPurple
-                    onAppColorChanged(newColor)
+                    val defaultColor = Color(0xFFFFC107)
+                    onAppColorChanged(if (appColor == lightPurple) defaultColor else lightPurple)
                 }
             )
         }
-
 
         SettingRow("Auto Arm Security Alarm") {
             Switch(
@@ -171,26 +160,34 @@ fun UserSettingsContent(
             )
         }
 
+        // Other Sections
         SectionHeader("Voice")
         SettingRow("Voice Assistants") {
-            Icon(
-                imageVector = Icons.Default.Mic,
-                contentDescription = "Voice",
-                tint = appColor
-            )
+            Icon(Icons.Default.Mic, contentDescription = null, tint = appColor)
         }
 
         SectionHeader("Permissions")
         SettingRow("Notifications & Permissions") {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "Permissions",
-                tint = appColor
-            )
+            Icon(Icons.Default.Notifications, contentDescription = null, tint = appColor)
         }
 
         Spacer(modifier = Modifier.weight(1f))
-        BottomNavigationBar(appColor)
+
+        // Bottom navigation (your existing component)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BottomNavItem("Favorites", Icons.Default.Star, false, appColor) { navController.navigate("favorites") }
+            BottomNavItem("Things", Icons.Default.Dashboard, false, appColor) { navController.navigate("things") }
+            BottomNavItem("Routines", Icons.Default.SettingsBackupRestore, true, appColor) { navController.navigate("routines") }
+            BottomNavItem("Ideas", Icons.Default.Lightbulb, false, appColor) { navController.navigate("ideas") }
+            BottomNavItem("Settings", Icons.Default.Settings, false, appColor) { /* already here */ }
+        }
     }
 }
 
@@ -241,21 +238,18 @@ fun EditUserDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                if (name.isBlank()) {
-                    error = "Name cannot be empty"
-                } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                    error = "Enter a valid email"
-                } else {
-                    onConfirm(name.trim(), email.trim())
+                when {
+                    name.isBlank() ->
+                        error = "Name cannot be empty"
+                    !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() ->
+                        error = "Enter a valid email"
+                    else ->
+                        onConfirm(name.trim(), email.trim())
                 }
-            }) {
-                Text("OK")
-            }
+            }) { Text("OK") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
+            TextButton(onClick = onDismiss) { Text("Cancel") }
         }
     )
 }
@@ -290,35 +284,6 @@ fun SettingRow(title: String, trailingContent: @Composable () -> Unit) {
 }
 
 @Composable
-fun BottomNavigationBar(selectedColor: Color) {
-    val selectedTab = remember { mutableStateOf("settings") }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        BottomNavItem("Favorites", Icons.Default.Star, selectedTab.value == "favorites", selectedColor) {
-            selectedTab.value = "favorites"
-        }
-        BottomNavItem("Things", Icons.Default.Dashboard, selectedTab.value == "things", selectedColor) {
-            selectedTab.value = "things"
-        }
-        BottomNavItem("Routines", Icons.Default.SettingsBackupRestore, selectedTab.value == "routines", selectedColor) {
-            selectedTab.value = "routines"
-        }
-        BottomNavItem("Ideas", Icons.Default.Lightbulb, selectedTab.value == "ideas", selectedColor) {
-            selectedTab.value = "ideas"
-        }
-        BottomNavItem("Settings", Icons.Default.Settings, selectedTab.value == "settings", selectedColor) {
-            selectedTab.value = "settings"
-        }
-    }
-}
-
-@Composable
 fun BottomNavItem(
     label: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -347,9 +312,9 @@ fun BottomNavItem(
 @Preview(showBackground = true)
 @Composable
 fun SettingsScreenPreview() {
-    val dummyNavController = rememberNavController()
+    val navController = rememberNavController()
     UserSettingsContent(
-        navController = dummyNavController,
+        navController = navController,
         userName = "Jane Doe",
         userEmail = "jane@example.com",
         appColor = Color(0xFFFFC107),

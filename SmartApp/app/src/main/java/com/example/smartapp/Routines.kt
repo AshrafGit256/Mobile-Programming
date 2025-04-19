@@ -14,36 +14,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.smartapp.components.BottomNavItem
-import com.example.smartapp.db.RoutineDatabaseHelper
+import com.example.smartapp.room.Routine
+import com.example.smartapp.viewmodel.RoutineViewModel
 import java.util.*
 
-@Preview(showBackground = true)
 @Composable
-fun PreviewRoutinesScreen() {
-    val navController = rememberNavController()
-    Routines(navController = navController)
-}
-
-@Composable
-fun Routines(navController: NavController) {
+fun Routines(navController: NavController, viewModel: RoutineViewModel = viewModel()) {
     var selectedTab by remember { mutableStateOf("routines") }
     var showDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val dbHelper = remember { RoutineDatabaseHelper(context) }
-    var routines by remember { mutableStateOf(dbHelper.getAllRoutines()) }
+
+    val routines by viewModel.routines
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Top Bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -60,7 +50,6 @@ fun Routines(navController: NavController) {
                 )
             }
 
-            // Content
             if (routines.isEmpty()) {
                 Column(
                     modifier = Modifier
@@ -75,20 +64,8 @@ fun Routines(navController: NavController) {
                         modifier = Modifier.size(100.dp),
                         tint = Color.Gray
                     )
-                    Text(
-                        "No Routines!",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(top = 10.dp)
-                    )
-                    Text(
-                        "Click the '+' button below to get started",
-                        fontSize = 16.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(top = 8.dp),
-                        textAlign = TextAlign.Center
-                    )
+                    Text("No Routines!", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    Text("Click the '+' button below to get started", fontSize = 16.sp, color = Color.Gray, textAlign = TextAlign.Center)
                 }
             } else {
                 Column(modifier = Modifier
@@ -104,7 +81,6 @@ fun Routines(navController: NavController) {
                 }
             }
 
-            // Bottom Navigation
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -112,55 +88,29 @@ fun Routines(navController: NavController) {
                     .padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                BottomNavItem(
-                    icon = Icons.Default.Star,
-                    label = "Favorites",
-                    isSelected = selectedTab == "favourites",
-                    onClick = {
-                        selectedTab = "favourites"
-                        navController.navigate("favorites")
-                    }
-                )
-                BottomNavItem(
-                    icon = Icons.Default.Dashboard,
-                    label = "Things",
-                    isSelected = selectedTab == "things",
-                    onClick = {
-                        selectedTab = "things"
-                        navController.navigate("things")
-                    }
-                )
-                BottomNavItem(
-                    icon = Icons.Default.SettingsBackupRestore,
-                    label = "Routines",
-                    isSelected = selectedTab == "routines",
-                    onClick = {
-                        selectedTab = "routines"
-                        navController.navigate("routines")
-                    }
-                )
-                BottomNavItem(
-                    icon = Icons.Default.Lightbulb,
-                    label = "Ideas",
-                    isSelected = selectedTab == "ideas",
-                    onClick = {
-                        selectedTab = "ideas"
-                        navController.navigate("ideas")
-                    }
-                )
-                BottomNavItem(
-                    icon = Icons.Default.Settings,
-                    label = "Settings",
-                    isSelected = selectedTab == "settings",
-                    onClick = {
-                        selectedTab = "settings"
-                        navController.navigate("settings")
-                    }
-                )
+                BottomNavItem(Icons.Default.Star, "Favorites", selectedTab == "favourites") {
+                    selectedTab = "favourites"
+                    navController.navigate("favorites")
+                }
+                BottomNavItem(Icons.Default.Dashboard, "Things", selectedTab == "things") {
+                    selectedTab = "things"
+                    navController.navigate("things")
+                }
+                BottomNavItem(Icons.Default.SettingsBackupRestore, "Routines", selectedTab == "routines") {
+                    selectedTab = "routines"
+                    navController.navigate("routines")
+                }
+                BottomNavItem(Icons.Default.Lightbulb, "Ideas", selectedTab == "ideas") {
+                    selectedTab = "ideas"
+                    navController.navigate("ideas")
+                }
+                BottomNavItem(Icons.Default.Settings, "Settings", selectedTab == "settings") {
+                    selectedTab = "settings"
+                    navController.navigate("settings")
+                }
             }
         }
 
-        // Floating Action Button
         FloatingActionButton(
             onClick = { showDialog = true },
             containerColor = Color(0xFF2596BE),
@@ -172,13 +122,11 @@ fun Routines(navController: NavController) {
             Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
         }
 
-        // Show Add Dialog
         if (showDialog) {
             AddRoutineDialog(
                 onDismiss = { showDialog = false },
                 onSave = { name, time, recurrence ->
-                    dbHelper.insertRoutine(name, time, recurrence)
-                    routines = dbHelper.getAllRoutines()
+                    viewModel.addRoutine(Routine(name = name, time = time, recurrence = recurrence))
                     showDialog = false
                 }
             )
@@ -201,11 +149,7 @@ fun AddRoutineDialog(
         title = { Text("Add Routine") },
         text = {
             Column {
-                OutlinedTextField(
-                    value = taskName,
-                    onValueChange = { taskName = it },
-                    label = { Text("Task Name") }
-                )
+                OutlinedTextField(value = taskName, onValueChange = { taskName = it }, label = { Text("Task Name") })
                 Spacer(Modifier.height(8.dp))
                 TimePickerView { selectedTime = it }
                 Spacer(Modifier.height(8.dp))
@@ -215,13 +159,11 @@ fun AddRoutineDialog(
             }
         },
         confirmButton = {
-            Button(
-                onClick = {
-                    if (taskName.isNotBlank() && selectedTime.isNotBlank()) {
-                        onSave(taskName, selectedTime, selectedRecurrence)
-                    }
+            Button(onClick = {
+                if (taskName.isNotBlank() && selectedTime.isNotBlank()) {
+                    onSave(taskName, selectedTime, selectedRecurrence)
                 }
-            ) {
+            }) {
                 Text("Save")
             }
         },
@@ -272,8 +214,7 @@ fun DropdownMenuView(
             onValueChange = {},
             label = { Text("Recurrence") },
             readOnly = true,
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Box(
             modifier = Modifier
